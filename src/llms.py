@@ -1,6 +1,6 @@
-from langchain_community.chat_models import AzureChatOpenAI
+# from langchain_community.chat_models import AzureChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_google_genai import ChatGoogleGenerativeAI
+# from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOllama
 
@@ -15,19 +15,21 @@ Its recommended to store your relevant API keys in a .env file.
 """
 
 
-def get_gpt4() -> BaseChatModel:
-    return AzureChatOpenAI(deployment_name='your-gpt-4-deployment', temperature=0,
-                           openai_api_version=OPENAI_API_VERSION)
-
-
-def get_gpt35() -> BaseChatModel:
-    return AzureChatOpenAI(deployment_name='your-gpt-3.5-deployment', temperature=0,
-                           openai_api_version=OPENAI_API_VERSION)
-
-
-def get_gemini_pro() -> BaseChatModel:
-    return ChatGoogleGenerativeAI(model="gemini-pro", temperature=0, convert_system_message_to_human=True)
-
+# def get_gpt4() -> BaseChatModel:
+#     return AzureChatOpenAI(deployment_name='your-gpt-4-deployment', temperature=0,
+#                            openai_api_version=OPENAI_API_VERSION)
+# 
+# 
+# def get_gpt35() -> BaseChatModel:
+#     return AzureChatOpenAI(deployment_name='your-gpt-3.5-deployment', temperature=0,
+#                            openai_api_version=OPENAI_API_VERSION)
+# 
+# 
+# def get_gemini_pro() -> BaseChatModel:
+#     return ChatGoogleGenerativeAI(model="gemini-pro", temperature=0, convert_system_message_to_human=True)
+# 
+def get_gemma2_9b() -> BaseChatModel:
+    return ChatOllama(model='gemma2', temperature=0)
 
 # Ollama Example
 OLLAMA_PARAMS = {'temperature': 0, 'timeout': 120, }

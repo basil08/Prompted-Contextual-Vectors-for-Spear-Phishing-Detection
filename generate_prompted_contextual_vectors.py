@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 from src.constants import CACHE_DIR
-from src.llms import get_gpt4, get_gemini_pro, get_gpt35
+from src.llms import get_gemma2_9b
 from src.chains import ask_question_chain_with_float_output_parser, ask_question_chain_with_pydantic_output_parser
 import asyncio
 from langchain_core.runnables import Runnable
@@ -12,8 +12,13 @@ from src.utils import load_questions, load_emails, output_results, create_or_loa
 from openai.error import InvalidRequestError
 from argparse import ArgumentParser
 
-LLMS = [get_gpt4(), get_gpt35(), get_gemini_pro()]  # fill this list with your own LLMs
-LLM_NAMES = ['GPT4_1106', 'GPT35_0613', 'Gemini Pro']  # fill this list with the corresponding LLM names
+
+# LLMS = [get_gpt4(), get_gpt35(), get_gemini_pro()]  # fill this list with your own LLMs
+LLMS = [get_gemma2_9b()]
+
+#LLM_NAMES = ['GPT4_1106', 'GPT35_0613', 'Gemini Pro']  # fill this list with the corresponding LLM names
+LLM_NAMES = ['Gemma2_9b']
+
 CACHE_FILE_NAME = "async_cache.pickle"
 CACHE = create_or_load_cache(CACHE_FILE_NAME)
 MISS_FLAG = False
@@ -74,11 +79,18 @@ async def call_llm(chain: Runnable, email_hash: str, question_id: int, llm_name:
     Cached calling for LLM with the input question
     """
     global CACHE, MISS_FLAG
+    print("Debug: question_id: ", question_id)
+    print("Debug: llm_name: ", llm_name)
+
+    print("Debug: prompt_input: ", prompt_input)
+
     if (email_hash, question_id, llm_name) in CACHE:
         answer = CACHE[(email_hash, question_id, llm_name)]
     else:
         try:
+            print("Debug: calling LLM")
             answer = await chain.ainvoke(prompt_input)
+            print("Debug Got answer: ", answer)
         except InvalidRequestError as e:  # if the LLM fails for known reasons, impute this response with 0.5.
             if "maximum context length" in str(e) or 'management policy' in str(e):
                 answer = 0.5
@@ -92,7 +104,7 @@ async def call_llm(chain: Runnable, email_hash: str, question_id: int, llm_name:
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--batch_size', '-b', type=int, default=60, help='Number of emails to process in parallel')
-    parser.add_argument('--sleep_time', '-s', type=float, default=60, help='Time in seconds to sleep between batches')
+    parser.add_argument('--batch_size', '-b', type=int, default=1, help='Number of emails to process in parallel')
+    parser.add_argument('--sleep_time', '-s', type=float, default=0, help='Time in seconds to sleep between batches')
     args = parser.parse_args()
     asyncio.run(run_pipeline(args.batch_size, args.sleep_time))
